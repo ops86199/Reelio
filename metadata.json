@@ -1,0 +1,8 @@
+{
+  "name": "Reelio",
+  "description": "Cross-platform mobile and web social media application with direct messaging, image posting, profile customization, and follower-based feed.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
+
