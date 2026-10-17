@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
 import { Post, User } from '../types';
 import { sound } from '../utils/audio';
+import { MentionText } from './MentionText';
 
 interface PostDetailModalProps {
   post: Post;
@@ -10,6 +11,7 @@ interface PostDetailModalProps {
   onToggleLike: (postId: string) => void;
   onToggleSave: (postId: string) => void;
   onAddComment: (postId: string, text: string) => void;
+  onMentionClick?: (username: string) => void;
 }
 
 export const PostDetailModal: React.FC<PostDetailModalProps> = ({
@@ -19,6 +21,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
   onToggleLike,
   onToggleSave,
   onAddComment,
+  onMentionClick,
 }) => {
   const [commentText, setCommentText] = useState('');
   const [showHeartBurst, setShowHeartBurst] = useState(false);
@@ -109,9 +112,11 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 <span className="font-bold text-zinc-900 dark:text-white mr-1.5">
                   {post.author.username}
                 </span>
-                <span className="text-zinc-800 dark:text-zinc-200 leading-relaxed">
-                  {post.caption}
-                </span>
+                <MentionText
+                  text={post.caption}
+                  onMentionClick={onMentionClick}
+                  className="text-zinc-800 dark:text-zinc-200 leading-relaxed"
+                />
                 <div className="text-[10px] text-zinc-400 mt-1">{post.timestamp}</div>
               </div>
             </div>
@@ -129,9 +134,9 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                   <span className="font-bold text-zinc-900 dark:text-white mr-1.5">
                     {comment.author.username}
                   </span>
-                  <span className="text-zinc-800 dark:text-zinc-200 leading-relaxed">
-                    {comment.text}
-                  </span>
+                  <div className="text-zinc-800 dark:text-zinc-200 leading-relaxed">
+                    <MentionText text={comment.text} onMentionClick={onMentionClick} />
+                  </div>
                   <div className="text-[10px] text-zinc-400 mt-0.5">{comment.timestamp}</div>
                 </div>
               </div>

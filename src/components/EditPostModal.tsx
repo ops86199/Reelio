@@ -235,9 +235,23 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   rows={3}
-                  placeholder="Write your creative caption... #reelio #design"
+                  placeholder="Write your creative caption... tag creators with @username #reelio"
                   className="w-full p-3 text-xs bg-zinc-900 border border-zinc-800 rounded-2xl text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-violet-500 resize-none"
                 />
+                {/* Quick Mention Suggestions */}
+                <div className="mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase shrink-0">@ Tag:</span>
+                  {['marcus_k', 'sofia.lens', 'elena_rosh', 'maya_visuals', 'alex_rivera'].map((userTag) => (
+                    <button
+                      key={userTag}
+                      type="button"
+                      onClick={() => setCaption((prev) => `${prev} @${userTag}`.trim())}
+                      className="text-[10px] font-semibold text-violet-400 hover:text-violet-300 bg-violet-950/40 hover:bg-violet-900/50 px-2 py-0.5 rounded-lg whitespace-nowrap border border-violet-900/40 transition-colors cursor-pointer"
+                    >
+                      @{userTag}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>

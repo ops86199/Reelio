@@ -41,6 +41,7 @@ import { CrossPlatformModal } from './components/CrossPlatformModal';
 import { MusicPlayerBar } from './components/MusicPlayerBar';
 import { SongSelectorModal } from './components/SongSelectorModal';
 import { ShortVideosShelf } from './components/ShortVideosShelf';
+import { LoginPage } from './components/LoginPage';
 import {
   Sparkles,
   Smartphone,
@@ -51,6 +52,7 @@ import {
   Compass,
   UserPlus,
   Music,
+  Rotate3d,
 } from 'lucide-react';
 
 export default function App() {
@@ -84,6 +86,13 @@ export default function App() {
     const saved = localStorage.getItem('reelio_current_user');
     return saved ? JSON.parse(saved) : CURRENT_USER;
   });
+
+  // Authentication State & 3D Login modal
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    const saved = localStorage.getItem('reelio_is_logged_in');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Track which creators the user is currently following
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>(() => {
@@ -160,6 +169,26 @@ export default function App() {
     const next = !soundEnabled;
     setSoundEnabled(next);
     sound.setSoundEnabled(next);
+  };
+
+  // Auth Handlers
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    setIsLoggedIn(true);
+    setIsAuthModalOpen(false);
+    localStorage.setItem('reelio_is_logged_in', 'true');
+    localStorage.setItem('reelio_current_user', JSON.stringify(user));
+  };
+
+  const handleContinueAsGuest = () => {
+    setIsLoggedIn(true);
+    setIsAuthModalOpen(false);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setIsAuthModalOpen(true);
+    localStorage.setItem('reelio_is_logged_in', 'false');
   };
 
   const unreadMessagesCount = conversations.reduce(
@@ -457,11 +486,99 @@ export default function App() {
   // View author profile
   const handleViewUserProfile = (user: User) => {
     sound.playLike();
-    if (user.id === currentUser.id) {
+    if (user.id === currentUser.id || user.username.toLowerCase() === currentUser.username.toLowerCase()) {
       setViewingUserProfile(null);
     } else {
       setViewingUserProfile(user);
     }
+    setCurrentTab('profile');
+  };
+
+  // Navigate to user profile by parsed @mention username
+  const handleNavigateToUsername = (rawUsername: string) => {
+    const cleanUsername = rawUsername.replace(/^@/, '').trim().toLowerCase();
+    sound.playLike();
+
+    // Close any open modals
+    setCommentingPost(null);
+    setSelectedPostDetail(null);
+
+    // 1. Check if it's the current user
+    if (currentUser.username.toLowerCase() === cleanUsername) {
+      setViewingUserProfile(null);
+      setCurrentTab('profile');
+      return;
+    }
+
+    // 2. Search in known ALL_USERS
+    const foundInAll = ALL_USERS.find(
+      (u) => u.username.toLowerCase() === cleanUsername
+    );
+    if (foundInAll) {
+      setViewingUserProfile(foundInAll);
+      setCurrentTab('profile');
+      return;
+    }
+
+    // 3. Search in current posts authors
+    const postAuthor = posts.find(
+      (p) => p.author.username.toLowerCase() === cleanUsername
+    )?.author;
+    if (postAuthor) {
+      setViewingUserProfile(postAuthor);
+      setCurrentTab('profile');
+      return;
+    }
+
+    // 4. Search in reels creators
+    const reelAuthor = reels.find(
+      (r) => r.author.username.toLowerCase() === cleanUsername
+    )?.author;
+    if (reelAuthor) {
+      setViewingUserProfile(reelAuthor);
+      setCurrentTab('profile');
+      return;
+    }
+
+    // 5. Search in stories creators
+    const storyUser = stories.find(
+      (s) => s.username.toLowerCase() === cleanUsername
+    );
+    if (storyUser) {
+      const u: User = {
+        id: storyUser.userId,
+        username: storyUser.username,
+        displayName: storyUser.username,
+        avatar: storyUser.userAvatar,
+        bio: 'Reelio Creator 📸',
+        followersCount: 1420,
+        followingCount: 380,
+        postsCount: 5,
+        isFollowing: false,
+      };
+      setViewingUserProfile(u);
+      setCurrentTab('profile');
+      return;
+    }
+
+    // 6. Dynamic fallback profile for any other mentioned creator
+    const formattedName = cleanUsername
+      .split(/[._]/)
+      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+      .join(' ');
+
+    const fallbackUser: User = {
+      id: `user_${cleanUsername}`,
+      username: cleanUsername,
+      displayName: formattedName || cleanUsername,
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      bio: `Creator on Reelio. Photography & Visual Aesthetics ✨`,
+      followersCount: 890,
+      followingCount: 240,
+      postsCount: 0,
+      isFollowing: false,
+    };
+    setViewingUserProfile(fallbackUser);
     setCurrentTab('profile');
   };
 
@@ -523,6 +640,19 @@ export default function App() {
   const isMobileLayout = deviceMode !== 'responsive';
   const savedPosts = posts.filter((p) => p.isSaved);
 
+  // If user is logged out, render 3D Login Page
+  if (!isLoggedIn) {
+    return (
+      <LoginPage
+        currentUser={currentUser}
+        onLoginSuccess={handleLoginSuccess}
+        onContinueAsGuest={handleContinueAsGuest}
+        soundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+      />
+    );
+  }
+
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-black text-white' : 'bg-zinc-50 text-zinc-900'} font-sans`}>
       {/* Top Applet Bar with Reelio branding, Browser Music access, and Display Mode Switchers */}
@@ -575,6 +705,19 @@ export default function App() {
             </button>
           </div>
 
+          {/* 3D Login & Account Switcher Button */}
+          <button
+            onClick={() => {
+              sound.playLike();
+              setIsAuthModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold text-xs rounded-lg transition-all shadow-md shadow-violet-500/25"
+            title="Open 3D Login Page / Switch Account"
+          >
+            <Rotate3d className="w-3.5 h-3.5" />
+            <span>3D Login</span>
+          </button>
+
           {/* Cross Platform Guide Trigger */}
           <button
             onClick={() => setIsCrossPlatformInfoOpen(true)}
@@ -618,6 +761,7 @@ export default function App() {
                 deviceMode={deviceMode}
                 onChangeDeviceMode={setDeviceMode}
                 onOpenCrossPlatformInfo={() => setIsCrossPlatformInfoOpen(true)}
+                onOpenLoginPage={() => setIsAuthModalOpen(true)}
                 isMobileLayout={false}
               />
             </div>
@@ -640,6 +784,7 @@ export default function App() {
                 onOpenCreateModal={() => setIsCreateModalOpen(true)}
                 onOpenCrossPlatformInfo={() => setIsCrossPlatformInfoOpen(true)}
                 onOpenSongCatalog={() => setIsSongCatalogOpen(true)}
+                onOpenLoginPage={() => setIsAuthModalOpen(true)}
                 isMobileFrame={isMobileLayout}
               />
             </div>
@@ -771,6 +916,7 @@ export default function App() {
                             onOpenComments={(p) => setCommentingPost(p)}
                             onAddInlineComment={handleAddComment}
                             onAuthorClick={(author) => handleViewUserProfile(author)}
+                            onMentionClick={handleNavigateToUsername}
                             onEditPost={(p) => setEditingPost(p)}
                             onDeletePost={(pid) => handleDeletePost(pid)}
                           />
@@ -942,6 +1088,7 @@ export default function App() {
                       });
                     }}
                     onAuthorClick={(author) => handleViewUserProfile(author)}
+                    onMentionClick={handleNavigateToUsername}
                   />
                 </div>
               )}
@@ -983,6 +1130,7 @@ export default function App() {
                   onUpdateProfile={(updated) =>
                     setCurrentUser((prev) => ({ ...prev, ...updated }))
                   }
+                  onOpenLoginPage={() => setIsAuthModalOpen(true)}
                 />
               )}
             </div>
@@ -1003,6 +1151,7 @@ export default function App() {
                   deviceMode={deviceMode}
                   onChangeDeviceMode={setDeviceMode}
                   onOpenCrossPlatformInfo={() => setIsCrossPlatformInfoOpen(true)}
+                  onOpenLoginPage={() => setIsAuthModalOpen(true)}
                   isMobileLayout={true}
                 />
               </div>
@@ -1028,6 +1177,7 @@ export default function App() {
           currentUser={currentUser}
           onClose={() => setCommentingPost(null)}
           onAddComment={handleAddComment}
+          onMentionClick={handleNavigateToUsername}
         />
       )}
 
@@ -1040,6 +1190,7 @@ export default function App() {
           onToggleLike={handleToggleLike}
           onToggleSave={handleToggleSave}
           onAddComment={handleAddComment}
+          onMentionClick={handleNavigateToUsername}
         />
       )}
 
@@ -1073,6 +1224,31 @@ export default function App() {
       {/* Cross-Platform Architecture & Code Modal */}
       {isCrossPlatformInfoOpen && (
         <CrossPlatformModal onClose={() => setIsCrossPlatformInfoOpen(false)} />
+      )}
+
+      {/* 3D Login Page & Account Switcher Modal Overlay */}
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-50 bg-zinc-950 animate-in fade-in duration-200">
+          <div className="absolute top-4 right-4 z-40">
+            <button
+              onClick={() => {
+                sound.playLike();
+                setIsAuthModalOpen(false);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-850 text-zinc-300 hover:text-white border border-zinc-700/80 text-xs font-semibold shadow-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Return to Feed</span>
+              <span>✕</span>
+            </button>
+          </div>
+          <LoginPage
+            currentUser={currentUser}
+            onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        </div>
       )}
     </div>
   );

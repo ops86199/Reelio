@@ -9,6 +9,7 @@ import {
   Film,
   Music,
   Radio,
+  Rotate3d,
 } from 'lucide-react';
 import { ViewTab } from '../types';
 import { sound } from '../utils/audio';
@@ -24,6 +25,7 @@ interface TopBarProps {
   onOpenCreateModal: () => void;
   onOpenCrossPlatformInfo: () => void;
   onOpenSongCatalog?: () => void;
+  onOpenLoginPage?: () => void;
   isMobileFrame?: boolean;
 }
 
@@ -37,6 +39,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenCreateModal,
   onOpenCrossPlatformInfo,
   onOpenSongCatalog,
+  onOpenLoginPage,
 }) => {
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
 
@@ -128,6 +131,21 @@ export const TopBar: React.FC<TopBarProps> = ({
         >
           <PlusSquare className="w-4 h-4" />
         </button>
+
+        {/* 3D Login / Switch Account */}
+        {onOpenLoginPage && (
+          <button
+            onClick={() => {
+              sound.playLike();
+              onOpenLoginPage();
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-violet-950/70 hover:bg-violet-900 border border-violet-800/80 text-violet-300 hover:text-white transition-all text-xs font-semibold shadow-xs"
+            title="3D Login Page & Account Switcher"
+          >
+            <Rotate3d className="w-3.5 h-3.5 text-fuchsia-400" />
+            <span className="hidden sm:inline">3D Login</span>
+          </button>
+        )}
 
         {/* Notifications Icon with Badge */}
         <button

@@ -20,12 +20,14 @@ import {
 import { Reel, User } from '../types';
 import { sound } from '../utils/audio';
 import { musicEngine, SONGS_CATALOG } from '../utils/musicEngine';
+import { MentionText } from './MentionText';
 
 interface ReelsViewProps {
   reels: Reel[];
   currentUser: User;
   onOpenComments: (reel: Reel) => void;
   onAuthorClick?: (author: User) => void;
+  onMentionClick?: (username: string) => void;
   onOpenCreateModal?: () => void;
   onFollowToggle?: (userId: string) => void;
   followingMap?: Record<string, boolean>;
@@ -37,6 +39,7 @@ export const ReelsView: React.FC<ReelsViewProps> = ({
   currentUser,
   onOpenComments,
   onAuthorClick,
+  onMentionClick,
   onOpenCreateModal,
   onFollowToggle,
   followingMap = {},
@@ -409,9 +412,13 @@ export const ReelsView: React.FC<ReelsViewProps> = ({
         </div>
 
         {/* Caption */}
-        <p className="text-xs text-zinc-100 leading-relaxed drop-shadow line-clamp-2">
-          {activeReel.caption}
-        </p>
+        <div className="text-xs text-zinc-100 leading-relaxed drop-shadow line-clamp-2">
+          <MentionText
+            text={activeReel.caption}
+            onMentionClick={onMentionClick}
+            mentionClassName="font-semibold text-violet-300 hover:text-white underline cursor-pointer transition-colors inline-block"
+          />
+        </div>
 
         {/* Sound Track Pill (Browser Audio Player) */}
         <button

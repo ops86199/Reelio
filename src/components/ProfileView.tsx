@@ -11,6 +11,8 @@ import {
   UserCheck,
   UserPlus,
   Send,
+  Rotate3d,
+  LogOut,
 } from 'lucide-react';
 import { Post, User } from '../types';
 import { sound } from '../utils/audio';
@@ -26,6 +28,7 @@ interface ProfileViewProps {
   onBackToMyProfile?: () => void;
   onSelectPost: (post: Post) => void;
   onUpdateProfile: (updatedUser: Partial<User>) => void;
+  onOpenLoginPage?: () => void;
 }
 
 const HIGHLIGHTS = [
@@ -46,6 +49,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onBackToMyProfile,
   onSelectPost,
   onUpdateProfile,
+  onOpenLoginPage,
 }) => {
   const isOwnProfile = !viewingUser || viewingUser.id === currentUser.id;
   const targetUser = isOwnProfile ? currentUser : viewingUser;
@@ -144,12 +148,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {/* Action Buttons: Edit if own profile, Follow & Message if another user */}
             <div className="flex items-center gap-2">
               {isOwnProfile ? (
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="px-4 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-colors"
-                >
-                  Edit profile
-                </button>
+                <>
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="px-4 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-colors"
+                  >
+                    Edit profile
+                  </button>
+                  {onOpenLoginPage && (
+                    <button
+                      onClick={() => {
+                        sound.playLike();
+                        onOpenLoginPage();
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-violet-600/30 to-fuchsia-600/30 hover:from-violet-600/50 hover:to-fuchsia-600/50 border border-violet-500/40 text-violet-300 dark:text-violet-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+                      title="3D Login Page & Switch Creator"
+                    >
+                      <Rotate3d className="w-3.5 h-3.5 text-fuchsia-400" />
+                      <span>3D Login / Switch</span>
+                    </button>
+                  )}
+                </>
               ) : (
                 <>
                   <button

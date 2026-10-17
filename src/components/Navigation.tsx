@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Compass, Film, MessageCircle, Heart, User, Plus, PlusCircle, Smartphone, Monitor, Radio, Sparkles } from 'lucide-react';
+import { Home, Compass, Film, MessageCircle, Heart, User, Plus, PlusCircle, Smartphone, Monitor, Radio, Sparkles, Rotate3d, LogOut } from 'lucide-react';
 import { ViewTab, DeviceViewMode, User as UserType } from '../types';
 import { sound } from '../utils/audio';
 
@@ -13,6 +13,7 @@ interface NavigationProps {
   deviceMode: DeviceViewMode;
   onChangeDeviceMode: (mode: DeviceViewMode) => void;
   onOpenCrossPlatformInfo: () => void;
+  onOpenLoginPage?: () => void;
   isMobileLayout: boolean;
 }
 
@@ -26,6 +27,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   deviceMode,
   onChangeDeviceMode,
   onOpenCrossPlatformInfo,
+  onOpenLoginPage,
   isMobileLayout,
 }) => {
   const handleTabClick = (tab: ViewTab) => {
@@ -271,10 +273,29 @@ export const Navigation: React.FC<NavigationProps> = ({
           </div>
         </div>
 
+        {/* 3D Login & Switch User Button */}
+        {onOpenLoginPage && (
+          <button
+            onClick={() => {
+              sound.playLike();
+              onOpenLoginPage();
+            }}
+            className="w-full py-2.5 px-3 bg-gradient-to-r from-violet-600/30 to-fuchsia-600/30 hover:from-violet-600/50 hover:to-fuchsia-600/50 border border-violet-500/40 hover:border-violet-400 text-white rounded-xl transition-all text-xs font-semibold flex items-center justify-between group shadow-xs"
+          >
+            <div className="flex items-center gap-2">
+              <Rotate3d className="w-4 h-4 text-fuchsia-400 group-hover:rotate-12 transition-transform" />
+              <span>3D Login & Accounts</span>
+            </div>
+            <span className="text-[10px] bg-violet-900/80 text-violet-300 px-1.5 py-0.5 rounded-md font-mono">
+              3D
+            </span>
+          </button>
+        )}
+
         {/* Cross Platform Guide Trigger */}
         <button
           onClick={onOpenCrossPlatformInfo}
-          className="w-full py-2.5 px-3 text-xs font-semibold text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-900 transition-colors text-left flex items-center justify-between"
+          className="w-full py-2 px-3 text-xs font-semibold text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-900 transition-colors text-left flex items-center justify-between"
         >
           <span>React Native & Flutter</span>
           <span className="text-[10px] bg-violet-950 text-violet-400 px-1.5 py-0.5 rounded-lg border border-violet-800 font-mono">

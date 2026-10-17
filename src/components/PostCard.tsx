@@ -17,6 +17,7 @@ import {
 import { Post, User } from '../types';
 import { sound } from '../utils/audio';
 import { musicEngine } from '../utils/musicEngine';
+import { MentionText } from './MentionText';
 
 interface PostCardProps {
   post: Post;
@@ -26,6 +27,7 @@ interface PostCardProps {
   onOpenComments: (post: Post) => void;
   onAddInlineComment: (postId: string, text: string) => void;
   onAuthorClick?: (author: User) => void;
+  onMentionClick?: (username: string) => void;
   onEditPost?: (post: Post) => void;
   onDeletePost?: (postId: string) => void;
 }
@@ -38,6 +40,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   onOpenComments,
   onAddInlineComment,
   onAuthorClick,
+  onMentionClick,
   onEditPost,
   onDeletePost,
 }) => {
@@ -405,7 +408,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           >
             {post.author.username}
           </span>
-          <span>{post.caption}</span>
+          <MentionText text={post.caption} onMentionClick={onMentionClick} />
           {post.tags && post.tags.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1 text-[11px] text-pink-600 dark:text-pink-400 font-medium">
               {post.tags.map((tag) => (

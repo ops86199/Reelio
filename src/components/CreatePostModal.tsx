@@ -878,9 +878,24 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   rows={2}
-                  placeholder={createType === 'short' ? 'Write short video caption... #reelio' : 'Write a caption... #reelio'}
+                  placeholder={createType === 'short' ? 'Write short video caption... tag creators with @username #reelio' : 'Write a caption... tag creators with @username #reelio'}
                   className="w-full p-2.5 text-xs bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-violet-500 resize-none"
                 />
+              </div>
+
+              {/* Quick @Mention Suggestions */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <span className="text-[10px] font-bold text-zinc-500 uppercase shrink-0">@ Tag:</span>
+                {['marcus_k', 'sofia.lens', 'elena_rosh', 'maya_visuals', 'alex_rivera'].map((userTag) => (
+                  <button
+                    key={userTag}
+                    type="button"
+                    onClick={() => setCaption((prev) => `${prev} @${userTag}`.trim())}
+                    className="text-[10px] font-semibold text-violet-400 hover:text-violet-300 bg-violet-950/40 hover:bg-violet-900/50 px-2 py-0.5 rounded-lg whitespace-nowrap border border-violet-900/40 transition-colors cursor-pointer"
+                  >
+                    @{userTag}
+                  </button>
+                ))}
               </div>
 
               {/* Suggested Hashtags */}
@@ -889,8 +904,9 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 {SUGGESTED_TAGS.map((t) => (
                   <button
                     key={t}
+                    type="button"
                     onClick={() => setCaption((prev) => `${prev} #${t}`.trim())}
-                    className="text-[10px] font-semibold text-violet-400 hover:text-violet-300 bg-violet-950/40 px-2 py-0.5 rounded-lg whitespace-nowrap border border-violet-900/40"
+                    className="text-[10px] font-semibold text-pink-400 hover:text-pink-300 bg-pink-950/40 px-2 py-0.5 rounded-lg whitespace-nowrap border border-pink-900/40 cursor-pointer"
                   >
                     #{t}
                   </button>

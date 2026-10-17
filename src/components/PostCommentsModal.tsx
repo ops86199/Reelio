@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Heart, Send } from 'lucide-react';
 import { Post, User } from '../types';
 import { sound } from '../utils/audio';
+import { MentionText } from './MentionText';
 
 interface PostCommentsModalProps {
   post: Post;
@@ -9,6 +10,7 @@ interface PostCommentsModalProps {
   onClose: () => void;
   onAddComment: (postId: string, text: string) => void;
   onToggleCommentLike?: (postId: string, commentId: string) => void;
+  onMentionClick?: (username: string) => void;
 }
 
 const EMOJI_SHORTCUTS = ['❤️', '🔥', '👏', '😍', '🙌', '✨', '☕️', '🌿'];
@@ -19,6 +21,7 @@ export const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
   onClose,
   onAddComment,
   onToggleCommentLike,
+  onMentionClick,
 }) => {
   const [commentText, setCommentText] = useState('');
 
@@ -63,9 +66,11 @@ export const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
             <span className="font-semibold text-zinc-900 dark:text-white mr-1.5">
               {post.author.username}
             </span>
-            <span className="text-zinc-800 dark:text-zinc-200 leading-relaxed">
-              {post.caption}
-            </span>
+            <MentionText
+              text={post.caption}
+              onMentionClick={onMentionClick}
+              className="text-zinc-800 dark:text-zinc-200 leading-relaxed"
+            />
             <div className="mt-1 text-[11px] text-zinc-400">
               {post.timestamp}
             </div>
@@ -97,9 +102,9 @@ export const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
                         {comment.timestamp}
                       </span>
                     </div>
-                    <p className="text-zinc-700 dark:text-zinc-300 mt-0.5 leading-relaxed">
-                      {comment.text}
-                    </p>
+                    <div className="text-zinc-700 dark:text-zinc-300 mt-0.5 leading-relaxed">
+                      <MentionText text={comment.text} onMentionClick={onMentionClick} />
+                    </div>
                   </div>
                 </div>
 
@@ -120,17 +125,28 @@ export const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
           )}
         </div>
 
-        {/* Quick Emoji bar */}
+        {/* Quick Emoji bar & Author Mention Shortcut */}
         <div className="px-3 py-1.5 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between overflow-x-auto no-scrollbar gap-2 bg-zinc-50 dark:bg-zinc-900/50">
-          {EMOJI_SHORTCUTS.map((emoji) => (
-            <button
-              key={emoji}
-              onClick={() => handleEmojiClick(emoji)}
-              className="text-lg hover:scale-125 active:scale-95 transition-transform p-1 cursor-pointer"
-            >
-              {emoji}
-            </button>
-          ))}
+          <button
+            type="button"
+            onClick={() => setCommentText((prev) => `@${post.author.username} ${prev}`.trim())}
+            className="text-[11px] font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 bg-violet-100 dark:bg-violet-950/60 px-2.5 py-0.5 rounded-full shrink-0 border border-violet-200 dark:border-violet-800/50 cursor-pointer transition-colors"
+            title={`Mention @${post.author.username}`}
+          >
+            @{post.author.username}
+          </button>
+          <div className="flex items-center gap-1.5">
+            {EMOJI_SHORTCUTS.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => handleEmojiClick(emoji)}
+                className="text-lg hover:scale-125 active:scale-95 transition-transform p-1 cursor-pointer"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Input form */}
